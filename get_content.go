@@ -22,19 +22,30 @@ func getFirstHTMLTagContent(tagType string, html string) (string, error) {
 // getURLsFromHTML returns complete URLs from all anchor tags
 // within the given html body.
 func getURLsFromHTML(html string, baseURL *url.URL) ([]string, error) {
+	if baseURL == nil {
+		return nil, nil
+	}
+
 	doc, err := gq.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
 		return nil, err
 	}
+
 	var extractedURLs []string
-	_ = doc.Find("a[href]").Each(func(_ int, s *gq.Selection) {
-		if href, ok := s.Attr("href"); ok {
-			parsedHref, err := url.Parse(strings.TrimSpace(href))
-			if err != nil {
-				return
-			}
-			extractedURLs = append(extractedURLs, baseURL.ResolveReference(parsedHref).String())
+	doc.Find("a[href]").Each(func(_ int, s *gq.Selection) {
+		href, ok := s.Attr("href")
+		if !ok {
+			return
 		}
+		href = strings.TrimSpace(href)
+		if href == "" {
+			return
+		}
+		parsedHref, err := url.Parse(href)
+		if href == "" || err != nil {
+			return
+		}
+		extractedURLs = append(extractedURLs, baseURL.ResolveReference(parsedHref).String())
 	})
 	return extractedURLs, nil
 }
@@ -42,19 +53,30 @@ func getURLsFromHTML(html string, baseURL *url.URL) ([]string, error) {
 // getImagesFromHTML complete source URLs for all image tags
 // within the given html body.
 func getImagesFromHTML(html string, baseURL *url.URL) ([]string, error) {
+	if baseURL == nil {
+		return nil, nil
+	}
+
 	doc, err := gq.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
 		return nil, err
 	}
+
 	var extractedURLs []string
-	_ = doc.Find("img[src]").Each(func(_ int, s *gq.Selection) {
-		if href, ok := s.Attr("src"); ok {
-			parsedHref, err := url.Parse(strings.TrimSpace(href))
-			if err != nil {
-				return
-			}
-			extractedURLs = append(extractedURLs, baseURL.ResolveReference(parsedHref).String())
+	doc.Find("img[src]").Each(func(_ int, s *gq.Selection) {
+		src, ok := s.Attr("src")
+		if !ok {
+			return
 		}
+		src = strings.TrimSpace(src)
+		if src == "" {
+			return
+		}
+		parsedSrc, err := url.Parse(src)
+		if src == "" || err != nil {
+			return
+		}
+		extractedURLs = append(extractedURLs, baseURL.ResolveReference(parsedSrc).String())
 	})
 	return extractedURLs, nil
 }

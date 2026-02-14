@@ -12,7 +12,12 @@ type PageData struct {
 
 func extractPageData(html, pageURL string) PageData {
 	parsedPageURL, _ := url.Parse(pageURL)
-	data := PageData{URL: pageURL}
+	data := PageData{
+		URL:           pageURL,
+		OutgoingLinks: []string{},
+		ImageURLs:     []string{},
+	}
+
 	data.H1, _ = getFirstHTMLTagContent("h1", html)
 	data.FirstParagraph, _ = getFirstHTMLTagContent("p", html)
 	data.OutgoingLinks, _ = getURLsFromHTML(html, parsedPageURL)
