@@ -143,7 +143,6 @@ func (cfg *config) crawlPage(rawCurrentURL string) {
 	if err != nil {
 		log.Printf("error: %s\n", err)
 	}
-	fmt.Printf("SCRAPING LINKS FROM: %s\n", normCurrent)
 	urls, err := getURLsFromHTML(html, curURL)
 	if err != nil {
 		log.Fatal(err)

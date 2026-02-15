@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -62,9 +63,14 @@ func main() {
 	})
 
 	cfg.wg.Wait()
-	fmt.Println("\nLinks found per webpage:")
-	fmt.Println("____________________")
-	for k, v := range cfg.pages {
-		fmt.Printf("%s: %d\n", k, len(v.OutgoingLinks)+len(v.ImageURLs))
+	if len(cfg.pages) > 0 {
+		filename := fmt.Sprintf("%s_report.csv", strings.ReplaceAll(cfg.baseURL.Hostname(), ".", "-"))
+		err := writeCSVReport(cfg.pages, filename)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("generated report: %s\n", filename)
+	} else {
+		fmt.Println("No links found on webpage given.")
 	}
 }
