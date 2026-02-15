@@ -115,18 +115,13 @@ func getHTML(rawURL string) (string, error) {
 	return html, nil
 }
 
-func crawlPage(rawBaseURL, rawCurrentURL string, pages map[string]int) {
-	baseURL, err := url.Parse(rawBaseURL)
-	if err != nil {
-		log.Fatal(err)
-	}
-	baseHostname := baseURL.Hostname()
+func (cfg *config) crawlPage(rawCurrentURL string) {
 	curURL, err := url.Parse(rawCurrentURL)
 	if err != nil {
 		log.Fatal(err)
 	}
 	currentHostname := curURL.Hostname()
-	if baseHostname != currentHostname {
+	if cfg.baseURL.Hostname() != currentHostname {
 		return
 	}
 
@@ -134,25 +129,37 @@ func crawlPage(rawBaseURL, rawCurrentURL string, pages map[string]int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if _, ok := pages[normCurrent]; ok {
-		pages[normCurrent] += 1
+	if isFirst := cfg.addPageVisit(normCurrent); !isFirst {
 		return
-	} else {
-		pages[normCurrent] = 1
 	}
 	html, err := getHTML(rawCurrentURL)
 	if err != nil {
 		log.Printf("error: %s\n", err)
 	}
-	fmt.Println("______________________________")
-	fmt.Printf("SCRAPING LINKS FROM HTML: %s\n", rawCurrentURL)
-	fmt.Println("______________________________")
-	// fmt.Println(html)
+	fmt.Printf("SCRAPING LINKS FROM: %s\n", normCurrent)
 	urls, err := getURLsFromHTML(html, curURL)
 	if err != nil {
 		log.Fatal(err)
 	}
+	cfg.mu.Lock()
+	cfg.pages[normCurrent] = extractPageData(html, rawCurrentURL)
+	cfg.mu.Unlock()
 	for _, url := range urls {
-		crawlPage(rawBaseURL, url, pages)
+		cfg.wg.Go(func() {
+			defer func() { <-cfg.concurrencyControl }()
+			cfg.concurrencyControl <- struct{}{}
+			cfg.crawlPage(url)
+		})
+	}
+}
+
+func (cfg *config) addPageVisit(normalizedURL string) (isFirst bool) {
+	if _, ok := cfg.pages[normalizedURL]; ok {
+		return false
+	} else {
+		cfg.mu.Lock()
+		cfg.pages[normalizedURL] = PageData{}
+		cfg.mu.Unlock()
+		return true
 	}
 }
