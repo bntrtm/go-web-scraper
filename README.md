@@ -17,7 +17,7 @@ A `link` *must* be provided to the program to start crawling from.
 
 `concurrency control` is an OPTIONAL integer specifying the number of goroutines to use at once (default: 1).
 
-`page limit` is an OPTIONAL integer specifying the maximum number of pages to crawl before exiting the program.
+`page limit` is an OPTIONAL integer specifying the maximum number of pages to crawl before exiting the program (default: 3).
 ```
 ```
 ```
