@@ -116,6 +116,13 @@ func getHTML(rawURL string) (string, error) {
 }
 
 func (cfg *config) crawlPage(rawCurrentURL string) {
+	cfg.mu.Lock()
+	shouldReturn := len(cfg.pages) >= cfg.maxPages
+	cfg.mu.Unlock()
+	if shouldReturn {
+		return
+	}
+
 	curURL, err := url.Parse(rawCurrentURL)
 	if err != nil {
 		log.Fatal(err)
