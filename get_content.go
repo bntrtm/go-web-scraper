@@ -116,6 +116,9 @@ func getHTML(rawURL string) (string, error) {
 }
 
 func (cfg *config) crawlPage(rawCurrentURL string) {
+	cfg.concurrencyControl <- struct{}{}
+	defer func() { <-cfg.concurrencyControl }()
+
 	cfg.mu.Lock()
 	shouldReturn := false
 	if cfg.maxPages != 0 {
@@ -142,21 +145,17 @@ func (cfg *config) crawlPage(rawCurrentURL string) {
 	if isFirst := cfg.addPageVisit(normCurrent); !isFirst {
 		return
 	}
-	html, err := getHTML(rawCurrentURL)
+	htmlBody, err := getHTML(rawCurrentURL)
 	if err != nil {
 		log.Printf("error: %s\n", err)
 	}
-	urls, err := getURLsFromHTML(html, curURL)
-	if err != nil {
-		log.Fatal(err)
-	}
+
+	pageData := extractPageData(htmlBody, rawCurrentURL)
 	cfg.mu.Lock()
-	cfg.pages[normCurrent] = extractPageData(html, rawCurrentURL)
+	cfg.pages[normCurrent] = pageData
 	cfg.mu.Unlock()
-	for _, url := range urls {
+	for _, url := range pageData.OutgoingLinks {
 		cfg.wg.Go(func() {
-			defer func() { <-cfg.concurrencyControl }()
-			cfg.concurrencyControl <- struct{}{}
 			cfg.crawlPage(url)
 		})
 	}

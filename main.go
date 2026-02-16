@@ -64,8 +64,6 @@ func main() {
 
 	fmt.Printf("starting crawl of: %s\n", cfg.baseURL)
 	cfg.wg.Go(func() {
-		defer func() { <-cfg.concurrencyControl }()
-		cfg.concurrencyControl <- struct{}{}
 		cfg.crawlPage(rawBaseURL)
 	})
 
