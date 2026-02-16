@@ -121,7 +121,7 @@ func (cfg *config) crawlPage(rawCurrentURL string) {
 
 	cfg.mu.Lock()
 	shouldReturn := false
-	if cfg.maxPages != 0 {
+	if cfg.maxPages > 0 {
 		shouldReturn = len(cfg.pages) >= cfg.maxPages
 	}
 	cfg.mu.Unlock()

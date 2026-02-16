@@ -21,5 +21,5 @@ An integer specifying the number of goroutines to use in parallel (default: 1).
 
 `page limit: -p <int>`
 
-An integer specifying the maximum number of pages to crawl before exiting the program (default: 3).
+An integer specifying the maximum number of pages to crawl before exiting the program (default: 3). When set to <= 0, there will be no limit, causing the crawler to crawl for every link until all are found.
 
