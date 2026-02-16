@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 )
@@ -46,20 +45,6 @@ func main() {
 		concurrencyControl: make(chan struct{}, *cFlag),
 		wg:                 &sync.WaitGroup{},
 		maxPages:           *pFlag,
-	}
-	if len(args) > 1 {
-		i, err := strconv.Atoi(args[1])
-		if err != nil {
-			log.Fatalf("error: bad input for concurrency control: %s (must be integer)", args[1])
-		}
-		cfg.concurrencyControl = make(chan struct{}, i)
-	}
-	if len(args) > 2 {
-		i, err := strconv.Atoi(args[2])
-		if err != nil {
-			log.Fatalf("error: bad input for max page crawl count: %s (must be integer)", args[2])
-		}
-		cfg.maxPages = i
 	}
 
 	fmt.Printf("starting crawl of: %s\n", cfg.baseURL)
