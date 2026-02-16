@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/url"
@@ -20,14 +21,20 @@ type config struct {
 }
 
 func main() {
-	if len(os.Args[1:]) < 1 {
+	cFlag := flag.Int("c", 1, "Number of concurrent goroutines to use")
+	pFlag := flag.Int("p", 3, "Maximum number of pages to crawl before exit")
+	flag.Parse()
+
+	args := flag.Args()
+	if len(args) < 1 {
 		fmt.Println("no website provided")
 		os.Exit(1)
-	} else if len(os.Args[1:]) > 3 {
+	} else if len(args) > 1 {
 		fmt.Println("too many arguments provided")
+		fmt.Println(args)
 		os.Exit(1)
 	}
-	rawBaseURL := os.Args[1]
+	rawBaseURL := args[0]
 	baseURL, err := url.Parse(rawBaseURL)
 	if err != nil {
 		log.Fatal(err)
@@ -36,21 +43,21 @@ func main() {
 		baseURL:            baseURL,
 		pages:              map[string]PageData{},
 		mu:                 &sync.Mutex{},
-		concurrencyControl: make(chan struct{}, 1),
+		concurrencyControl: make(chan struct{}, *cFlag),
 		wg:                 &sync.WaitGroup{},
-		maxPages:           3,
+		maxPages:           *pFlag,
 	}
-	if len(os.Args[1:]) > 1 {
-		i, err := strconv.Atoi(os.Args[2])
+	if len(args) > 1 {
+		i, err := strconv.Atoi(args[1])
 		if err != nil {
-			log.Fatalf("error: bad input for concurrency control: %s (must be integer)", os.Args[2])
+			log.Fatalf("error: bad input for concurrency control: %s (must be integer)", args[1])
 		}
 		cfg.concurrencyControl = make(chan struct{}, i)
 	}
-	if len(os.Args[1:]) > 2 {
-		i, err := strconv.Atoi(os.Args[3])
+	if len(args) > 2 {
+		i, err := strconv.Atoi(args[2])
 		if err != nil {
-			log.Fatalf("error: bad input for max page crawl count: %s (must be integer)", os.Args[3])
+			log.Fatalf("error: bad input for max page crawl count: %s (must be integer)", args[2])
 		}
 		cfg.maxPages = i
 	}

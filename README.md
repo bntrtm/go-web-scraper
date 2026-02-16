@@ -9,19 +9,17 @@ With go already installed, you can run:
 ## Usage
 
 ```
-go-web-scraper <link> <concurrency control> <page limit>
-```
+go-web-scraper [options] <link>
 ```
 
 A `link` *must* be provided to the program to start crawling from.
 
-`concurrency control` is an OPTIONAL integer specifying the number of goroutines to use at once (default: 1).
+### Options
+`Concurrency control: -c <int>`
 
-`page limit` is an OPTIONAL integer specifying the maximum number of pages to crawl before exiting the program (default: 3).
-```
-```
-```
-```
-```
-```
-```
+An integer specifying the number of goroutines to use in parallel (default: 1).
+
+`page limit: -p <int>`
+
+An integer specifying the maximum number of pages to crawl before exiting the program (default: 3).
+
